@@ -1,5 +1,5 @@
 import Header from "@/components/Header";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar, Upload, ChevronLeft, ChevronRight } from "lucide-react";
@@ -11,35 +11,68 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DiagnosisData } from "@/data/diagnosisData";
+import { useDataset } from "@/context/DatasetContext";
 
 const DiagnosisHistory = () => {
-  const [selectedDate, setSelectedDate] = useState("2025년 8월 5일");
-  const [currentMonth, setCurrentMonth] = useState("August 2025");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [viewDate, setViewDate] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   
-  const data = [
-    { image_name: "ISIC_2637011", patient_id: "IP_7279968", sex: "male", age_approx: 45.0, anatom_site_general_challenge: "head/neck", target: 0, diagnosis: "benign", benign_malignant: "benign", location: "head/neck" },
-    { image_name: "ISIC_0015719", patient_id: "IP_3075186", sex: "female", age_approx: 45.0, anatom_site_general_challenge: "upper extremity", target: 0, diagnosis: "benign", benign_malignant: "benign", location: "upper extremity" },
-    { image_name: "ISIC_0052212", patient_id: "IP_2842074", sex: "female", age_approx: 50.0, anatom_site_general_challenge: "lower extremity", target: 0, diagnosis: "benign", benign_malignant: "benign", location: "lower extremity" },
-    { image_name: "ISIC_0068279", patient_id: "IP_6890425", sex: "female", age_approx: 45.0, anatom_site_general_challenge: "head/neck", target: 0, diagnosis: "benign", benign_malignant: "benign", location: "head/neck" },
-    { image_name: "ISIC_0074268", patient_id: "IP_8723313", sex: "female", age_approx: 55.0, anatom_site_general_challenge: "upper extremity", target: 0, diagnosis: "benign", benign_malignant: "benign", location: "upper extremity" },
-    { image_name: "ISIC_0074311", patient_id: "IP_2950485", sex: "female", age_approx: 40.0, anatom_site_general_challenge: "lower extremity", target: 0, diagnosis: "benign", benign_malignant: "benign", location: "lower extremity" },
-    { image_name: "ISIC_0098742", patient_id: "IP_1234567", sex: "male", age_approx: 65.0, anatom_site_general_challenge: "torso", target: 1, diagnosis: "malignant", benign_malignant: "malignant", location: "torso" },
-    { image_name: "ISIC_0102341", patient_id: "IP_7896543", sex: "male", age_approx: 70.0, anatom_site_general_challenge: "lower extremity", target: 1, diagnosis: "malignant", benign_malignant: "malignant", location: "lower extremity" },
-    { image_name: "ISIC_0112342", patient_id: "IP_4567890", sex: "female", age_approx: 35.0, anatom_site_general_challenge: "torso", target: 0, diagnosis: "benign", benign_malignant: "benign", location: "torso" },
-    { image_name: "ISIC_0123456", patient_id: "IP_1112131", sex: "male", age_approx: 60.0, anatom_site_general_challenge: "upper extremity", target: 1, diagnosis: "malignant", benign_malignant: "malignant", location: "upper extremity" },
-    { image_name: "ISIC_0134567", patient_id: "IP_2223242", sex: "female", age_approx: 30.0, anatom_site_general_challenge: "lower extremity", target: 0, diagnosis: "benign", benign_malignant: "benign", location: "lower extremity" },
-    { image_name: "ISIC_0145678", patient_id: "IP_3334353", sex: "male", age_approx: 85.0, anatom_site_general_challenge: "head/neck", target: 1, diagnosis: "malignant", benign_malignant: "malignant", location: "head/neck" },
-    { image_name: "ISIC_0156789", patient_id: "IP_4445464", sex: "female", age_approx: 50.0, anatom_site_general_challenge: "torso", target: 0, diagnosis: "benign", benign_malignant: "benign", location: "torso" },
-    { image_name: "ISIC_0167890", patient_id: "IP_5556575", sex: "male", age_approx: 42.0, anatom_site_general_challenge: "upper extremity", target: 0, diagnosis: "benign", benign_malignant: "benign", location: "upper extremity" },
-    { image_name: "ISIC_0178901", patient_id: "IP_6667686", sex: "female", age_approx: 58.0, anatom_site_general_challenge: "lower extremity", target: 1, diagnosis: "malignant", benign_malignant: "malignant", location: "lower extremity" },
-    { image_name: "ISIC_0189012", patient_id: "IP_7778797", sex: "male", age_approx: 49.0, anatom_site_general_challenge: "head/neck", target: 0, diagnosis: "benign", benign_malignant: "benign", location: "head/neck" },
-    { image_name: "ISIC_0190123", patient_id: "IP_8889908", sex: "female", age_approx: 64.0, anatom_site_general_challenge: "torso", target: 1, diagnosis: "malignant", benign_malignant: "malignant", location: "torso" },
-    { image_name: "ISIC_0201234", patient_id: "IP_9991011", sex: "male", age_approx: 33.0, anatom_site_general_challenge: "upper extremity", target: 0, diagnosis: "benign", benign_malignant: "benign", location: "upper extremity" },
-    { image_name: "ISIC_0212345", patient_id: "IP_0001213", sex: "female", age_approx: 37.0, anatom_site_general_challenge: "lower extremity", target: 0, diagnosis: "benign", benign_malignant: "benign", location: "lower extremity" },
-    { image_name: "ISIC_0223456", patient_id: "IP_1314151", sex: "male", age_approx: 55.0, anatom_site_general_challenge: "torso", target: 1, diagnosis: "malignant", benign_malignant: "malignant", location: "torso" }
-  ];
+  // 전역 데이터셋에서 읽기
+  const { records } = useDataset();
+  const data: DiagnosisData[] = records;
+
+  // 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // 한 페이지에 10개
+
+  const totalPages = Math.ceil(data.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = useMemo(() => data.slice(startIndex, endIndex), [data, startIndex, endIndex]);
 
   const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+  
+  const monthLabel = useMemo(
+    () => viewDate.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+    [viewDate]
+  );
+  
+  const selectedDateLabel = useMemo(
+    () => selectedDate.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }),
+    [selectedDate]
+  );
+  
+  const isSameDate = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+  
+  const calendarCells = useMemo(() => {
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const startWeekday = firstDay.getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const prevMonthDays = new Date(year, month, 0).getDate();
+    const cells: { date: Date; inCurrentMonth: boolean }[] = [];
+    for (let i = 0; i < 42; i++) {
+      const dayOffset = i - startWeekday + 1;
+      let cellDate: Date;
+      let inCurrentMonth = true;
+      if (dayOffset <= 0) {
+        cellDate = new Date(year, month - 1, prevMonthDays + dayOffset);
+        inCurrentMonth = false;
+      } else if (dayOffset > daysInMonth) {
+        cellDate = new Date(year, month + 1, dayOffset - daysInMonth);
+        inCurrentMonth = false;
+      } else {
+        cellDate = new Date(year, month, dayOffset);
+      }
+      cells.push({ date: cellDate, inCurrentMonth });
+    }
+    return cells;
+  }, [viewDate]);
   const calendarDays = [
     [27, 28, 29, 30, 31, 1, 2],
     [3, 4, 5, 6, 7, 8, 9],
@@ -86,11 +119,11 @@ const DiagnosisHistory = () => {
               
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))}>
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <span className="font-medium text-gray-900">{currentMonth}</span>
-                  <Button variant="ghost" size="sm">
+                  <span className="font-medium text-gray-900">{monthLabel}</span>
+                  <Button variant="ghost" size="sm" onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))}>
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
@@ -104,27 +137,27 @@ const DiagnosisHistory = () => {
                 </div>
 
                 <div className="grid grid-cols-7 gap-1">
-                  {calendarDays.flat().map((day, index) => {
-                    const isCurrentMonth = day <= 31 && day >= 1;
-                    const isSelected = day === 5;
-                    
+                  {calendarCells.map(({ date, inCurrentMonth }, index) => {
+                    const selected = isSameDate(date, selectedDate);
                     return (
                       <button
                         key={index}
+                        onClick={() => setSelectedDate(date)}
                         className={`
                           h-8 text-sm rounded transition-colors
-                          ${isCurrentMonth ? "text-gray-900" : "text-gray-400"}
-                          ${isSelected ? "bg-blue-600 text-white" : "hover:bg-gray-100"}
+                          ${inCurrentMonth ? "text-gray-900" : "text-gray-400"}
+                          ${selected ? "bg-blue-600 text-white" : "hover:bg-gray-100"}
                         `}
+                        title={date.toDateString()}
                       >
-                        {day}
+                        {date.getDate()}
                       </button>
                     );
                   })}
                 </div>
 
                 <div className="bg-blue-50 rounded p-3 text-center">
-                  <p className="text-blue-700 text-sm font-medium">{selectedDate}</p>
+                  <p className="text-blue-700 text-sm font-medium">{selectedDateLabel}</p>
                 </div>
               </div>
             </div>
@@ -153,7 +186,7 @@ const DiagnosisHistory = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.map((item, index) => (
+                    {currentData.map((item, index) => (
                       <TableRow key={index} className="hover:bg-gray-50">
                         <TableCell className="text-sm text-blue-600 font-mono">{item.image_name}</TableCell>
                         <TableCell className="text-sm text-blue-600 font-mono">{item.patient_id}</TableCell>
@@ -191,18 +224,37 @@ const DiagnosisHistory = () => {
               {/* Pagination */}
               <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
                   <div className="flex items-center gap-1">
-                    <button className="w-8 h-8 rounded text-sm bg-blue-600 text-white">1</button>
-                    <button className="w-8 h-8 rounded text-sm hover:bg-gray-100">2</button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-8 h-8 rounded text-sm ${
+                          currentPage === page ? "bg-blue-600 text-white" : "hover:bg-gray-100"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
                   </div>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
-                <p className="text-sm text-gray-500">총 20개 레코드 | 악성: 7개 | 양성: 13개</p>
+                <p className="text-sm text-gray-500">총 {data.length}개 레코드 | 악성: {data.filter(i => i.benign_malignant === "malignant").length}개 | 양성: {data.filter(i => i.benign_malignant === "benign").length}개</p>
               </div>
             </div>
           </div>

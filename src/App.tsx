@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import DiagnosisHistory from "./pages/DiagnosisHistory";
 import NotFound from "./pages/NotFound";
+import { DatasetProvider } from "@/context/DatasetContext";
 
 const queryClient = new QueryClient();
 
@@ -15,12 +16,14 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/diagnosis-history" element={<DiagnosisHistory />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <DatasetProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/diagnosis-history" element={<DiagnosisHistory />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </DatasetProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

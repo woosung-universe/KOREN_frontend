@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "lucide-react";
+import { useDataset } from "@/context/DatasetContext";
+import type { DiagnosisData } from "@/data/diagnosisData";
 
 interface DiagnosisCardProps {
   onDiagnose?: () => void;
@@ -13,13 +15,34 @@ interface DiagnosisCardProps {
 }
 
 const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
+  const { addRecord } = useDataset();
   const [imageUploaded, setImageUploaded] = useState(false);
   const [diagnosisText, setDiagnosisText] = useState("");
   const [sex, setSex] = useState("");
   const [anatomSite, setAnatomSite] = useState("");
+  const [patientName, setPatientName] = useState("");
+  const [age, setAge] = useState<string>("");
+  const [patientId, setPatientId] = useState("");
 
   const handleImageUpload = () => {
     setImageUploaded(true);
+  };
+
+  const handleSubmit = () => {
+    const ageNum = Number(age);
+    const newRecord: DiagnosisData = {
+      image_name: "", // 사진은 추후 업로드 연동 예정
+      patient_id: patientId || "",
+      sex: sex || "",
+      age_approx: isNaN(ageNum) ? 0 : ageNum,
+      anatom_site_general_challenge: anatomSite || "",
+      target: 0, // 모델 채우는 값은 비워둠(0)
+      diagnosis: "", // 모델 결과 비움
+      benign_malignant: "", // 모델 결과 비움
+      location: anatomSite || "",
+    };
+    addRecord(newRecord);
+    onDiagnose?.();
   };
 
   return (
@@ -34,9 +57,9 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
           onClick={handleImageUpload}
         >
           {imageUploaded ? (
-            <div className="text-sm text-muted-foreground">I939945 진단 이미지</div>
+            <div className="text-sm text-muted-foreground">이미지 업로드됨</div>
           ) : (
-            <div className="text-sm text-muted-foreground">I939945 진단 이미지</div>
+            <div className="text-sm text-muted-foreground">이미지 선택</div>
           )}
         </div>
       </div>
@@ -44,7 +67,7 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
       {showResult && (
         <div className="mb-8 p-6 bg-blue-50 rounded-lg">
           <h3 className="text-lg font-bold text-foreground mb-2">진단 결과,</h3>
-          <p className="text-lg font-bold text-foreground">80% 확률로 양성입니다.</p>
+          <p className="text-lg font-bold text-foreground">예시 결과(모델 연동 전)</p>
           <div className="mt-4">
             <Button variant="outline" size="sm">
               상세 리포트 보러가기 &gt;
@@ -56,15 +79,15 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div>
           <label className="text-sm text-muted-foreground mb-3 block">환자 성명</label>
-          <Input placeholder="홍길동" className="border border-border h-12" />
+          <Input placeholder="홍길동" className="border border-border h-12" value={patientName} onChange={e => setPatientName(e.target.value)} />
         </div>
         <div>
           <label className="text-sm text-muted-foreground mb-3 block">나이</label>
-          <Input placeholder="45" type="number" className="border border-border h-12" />
+          <Input placeholder="45" type="number" className="border border-border h-12" value={age} onChange={e => setAge(e.target.value)} />
         </div>
         <div>
           <label className="text-sm text-muted-foreground mb-3 block">환자 번호</label>
-          <Input placeholder="IP_7279968" className="border border-border h-12" />
+          <Input placeholder="IP_7279968" className="border border-border h-12" value={patientId} onChange={e => setPatientId(e.target.value)} />
         </div>
       </div>
 
@@ -113,7 +136,7 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
 
       <div className="text-center pt-4">
         <Button 
-          onClick={onDiagnose}
+          onClick={handleSubmit}
           className="px-12 py-3 text-base"
         >
           {showResult ? "등록하기" : "진단하기"}
