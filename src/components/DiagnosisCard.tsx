@@ -2,12 +2,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "lucide-react";
 import { useDataset } from "@/context/DatasetContext";
 import type { DiagnosisData } from "@/data/diagnosisData";
+import STTComponent from "./STTComponent";
 
 interface DiagnosisCardProps {
   onDiagnose?: () => void;
@@ -48,11 +55,12 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
   return (
     <div className="bg-white border border-border rounded-lg p-12 w-full mx-auto min-h-[600px]">
       <h2 className="text-xl font-bold text-foreground mb-8">피부암 진단</h2>
-      
 
       <div className="mb-8">
-        <label className="text-sm text-muted-foreground mb-4 block">사진을 첨부해주세요</label>
-        <div 
+        <label className="text-sm text-muted-foreground mb-4 block">
+          사진을 첨부해주세요
+        </label>
+        <div
           className="border-2 border-dashed border-border rounded-lg p-16 text-center cursor-pointer hover:bg-muted/50 min-h-[200px] flex items-center justify-center"
           onClick={handleImageUpload}
         >
@@ -67,7 +75,9 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
       {showResult && (
         <div className="mb-8 p-6 bg-blue-50 rounded-lg">
           <h3 className="text-lg font-bold text-foreground mb-2">진단 결과,</h3>
-          <p className="text-lg font-bold text-foreground">예시 결과(모델 연동 전)</p>
+          <p className="text-lg font-bold text-foreground">
+            예시 결과(모델 연동 전)
+          </p>
           <div className="mt-4">
             <Button variant="outline" size="sm">
               상세 리포트 보러가기 &gt;
@@ -78,35 +88,69 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div>
-          <label className="text-sm text-muted-foreground mb-3 block">환자 성명</label>
-          <Input placeholder="홍길동" className="border border-border h-12" value={patientName} onChange={e => setPatientName(e.target.value)} />
+          <label className="text-sm text-muted-foreground mb-3 block">
+            환자 성명
+          </label>
+          <Input
+            placeholder="홍길동"
+            className="border border-border h-12"
+            value={patientName}
+            onChange={(e) => setPatientName(e.target.value)}
+          />
         </div>
         <div>
-          <label className="text-sm text-muted-foreground mb-3 block">나이</label>
-          <Input placeholder="45" type="number" className="border border-border h-12" value={age} onChange={e => setAge(e.target.value)} />
+          <label className="text-sm text-muted-foreground mb-3 block">
+            나이
+          </label>
+          <Input
+            placeholder="45"
+            type="number"
+            className="border border-border h-12"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+          />
         </div>
         <div>
-          <label className="text-sm text-muted-foreground mb-3 block">환자 번호</label>
-          <Input placeholder="IP_7279968" className="border border-border h-12" value={patientId} onChange={e => setPatientId(e.target.value)} />
+          <label className="text-sm text-muted-foreground mb-3 block">
+            환자 번호
+          </label>
+          <Input
+            placeholder="IP_7279968"
+            className="border border-border h-12"
+            value={patientId}
+            onChange={(e) => setPatientId(e.target.value)}
+          />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
-          <label className="text-sm text-muted-foreground mb-3 block">성별</label>
-          <RadioGroup value={sex} onValueChange={setSex} className="flex space-x-6">
+          <label className="text-sm text-muted-foreground mb-3 block">
+            성별
+          </label>
+          <RadioGroup
+            value={sex}
+            onValueChange={setSex}
+            className="flex space-x-6"
+          >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="male" id="male" />
-              <Label htmlFor="male" className="text-sm">남성</Label>
+              <Label htmlFor="male" className="text-sm">
+                남성
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="female" id="female" />
-              <Label htmlFor="female" className="text-sm">여성</Label>
+              <Label htmlFor="female" className="text-sm">
+                여성
+              </Label>
             </div>
           </RadioGroup>
         </div>
         <div>
-          <label className="text-sm text-muted-foreground mb-3 block">병변 부위</label>
+          <label className="text-sm text-muted-foreground mb-3 block">
+            병변 부위
+          </label>
           <Select value={anatomSite} onValueChange={setAnatomSite}>
             <SelectTrigger className="border border-border h-12">
               <SelectValue placeholder="부위를 선택하세요" />
@@ -122,8 +166,10 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
       </div>
 
       <div className="mb-10">
-        <label className="text-sm text-muted-foreground mb-3 block">진단 메모 (선택사항)</label>
-        <Textarea 
+        <label className="text-sm text-muted-foreground mb-3 block">
+          진단 메모 (선택사항)
+        </label>
+        <Textarea
           placeholder="추가 관찰 사항이나 메모를 입력하세요"
           className="min-h-32 border border-border"
           value={diagnosisText}
@@ -134,11 +180,22 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
         </div>
       </div>
 
+      {/* STT 컴포넌트 추가 */}
+      <div className="mb-10">
+        <STTComponent
+          onSummaryReceived={(summary) => {
+            // STT 요약 결과를 진단 메모에 자동으로 추가
+            setDiagnosisText((prev) => {
+              const newText =
+                prev + (prev ? "\n\n" : "") + `[음성 요약] ${summary}`;
+              return newText.length > 200 ? newText.substring(0, 200) : newText;
+            });
+          }}
+        />
+      </div>
+
       <div className="text-center pt-4">
-        <Button 
-          onClick={handleSubmit}
-          className="px-12 py-3 text-base"
-        >
+        <Button onClick={handleSubmit} className="px-12 py-3 text-base">
           {showResult ? "등록하기" : "진단하기"}
         </Button>
       </div>
