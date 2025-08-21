@@ -13,21 +13,29 @@ const Header = () => {
                 <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
               </div>
             </div>
-            <Link to="/" className="text-lg font-bold text-foreground">KOREN</Link>
+            <Link to="/" className="text-lg font-bold text-foreground">
+              KOREN
+            </Link>
           </div>
 
           {/* Navigation */}
           <nav className="flex items-center space-x-8">
-            <Link to="/diagnosis-history" className="flex items-center space-x-1 text-sm text-muted-foreground cursor-pointer hover:text-foreground">
+            <Link
+              to="/diagnosis-history"
+              className="flex items-center space-x-1 text-sm text-muted-foreground cursor-pointer hover:text-foreground"
+            >
               <span>진단 기록</span>
+              <ChevronDown className="w-4 h-4" />
+            </Link>
+            <Link
+              to="/training"
+              className="flex items-center space-x-1 text-sm text-muted-foreground cursor-pointer hover:text-foreground"
+            >
+              <span>모델 학습</span>
               <ChevronDown className="w-4 h-4" />
             </Link>
             <div className="flex items-center space-x-1 text-sm text-muted-foreground cursor-pointer hover:text-foreground">
               <span>메뉴명</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
-            <div className="flex items-center space-x-1 text-sm text-muted-foreground cursor-pointer hover:text-foreground">
-              <span>버튼</span>
               <ChevronDown className="w-4 h-4" />
             </div>
             <div className="flex items-center space-x-1 text-sm text-muted-foreground cursor-pointer hover:text-foreground">
