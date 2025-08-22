@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import DiagnosisHistory from "./pages/DiagnosisHistory";
+import PatientHistory from "./pages/DiagnosisHistory";
+import PatientManagement from "./pages/PatientManagement";
 import Training from "./pages/Training";
 import NotFound from "./pages/NotFound";
 import { DatasetProvider } from "@/context/DatasetContext";
@@ -21,6 +23,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/diagnosis-history" element={<DiagnosisHistory />} />
+            <Route path="/patients" element={<PatientManagement />} />
+            <Route path="/patient/:patientId" element={<PatientHistory />} />
             <Route path="/training" element={<Training />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

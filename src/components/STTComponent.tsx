@@ -1,9 +1,14 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mic, MicOff, Loader2, Send } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { Mic, MicOff, FileText, Copy, Check } from "lucide-react";
+import {
+  apiService,
+  ConversationInput,
+  CommunicationSummary,
+} from "@/services/api";
 
 // Web Speech API 타입 정의
 interface SpeechRecognition extends EventTarget {
@@ -13,7 +18,6 @@ interface SpeechRecognition extends EventTarget {
   start(): void;
   stop(): void;
   abort(): void;
-  onstart: ((this: SpeechRecognition, ev: Event) => void) | null;
   onresult:
     | ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void)
     | null;
@@ -23,18 +27,21 @@ interface SpeechRecognition extends EventTarget {
   onend: ((this: SpeechRecognition, ev: Event) => void) | null;
 }
 
-interface SpeechRecognitionEvent extends Event {
+interface SpeechRecognitionEvent {
   resultIndex: number;
   results: SpeechRecognitionResultList;
 }
 
 interface SpeechRecognitionResultList {
   length: number;
+  item(index: number): SpeechRecognitionResult;
   [index: number]: SpeechRecognitionResult;
 }
 
 interface SpeechRecognitionResult {
   isFinal: boolean;
+  length: number;
+  item(index: number): SpeechRecognitionAlternative;
   [index: number]: SpeechRecognitionAlternative;
 }
 
@@ -45,136 +52,111 @@ interface SpeechRecognitionAlternative {
 
 interface SpeechRecognitionErrorEvent extends Event {
   error: string;
+  message: string;
 }
 
+// Window 인터페이스 확장
 declare global {
   interface Window {
-    SpeechRecognition: {
-      new (): SpeechRecognition;
-    };
-    webkitSpeechRecognition: {
-      new (): SpeechRecognition;
-    };
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
   }
 }
 
 interface STTComponentProps {
   onSummaryReceived?: (summary: string) => void;
-  enableSpeakerIdentification?: boolean; // 화자 식별 활성화 옵션
+  patientId?: string;
 }
 
 const STTComponent = ({
   onSummaryReceived,
-  enableSpeakerIdentification = false,
+  patientId = "default_patient",
 }: STTComponentProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const [summary, setSummary] = useState("");
+  const [speakerTranscripts, setSpeakerTranscripts] = useState<string[]>([]);
+  const [summary, setSummary] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [speakerTranscripts, setSpeakerTranscripts] = useState<
-    Array<{
-      speaker: string;
-      text: string;
-      timestamp: string;
-    }>
-  >([]);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
+  const [summaryData, setSummaryData] = useState<CommunicationSummary | null>(
+    null
+  );
+
   const { toast } = useToast();
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
-  // STT 시작
-  const startRecording = () => {
-    try {
-      // Web Speech API 지원 확인
-      if (
-        !("webkitSpeechRecognition" in window) &&
-        !("SpeechRecognition" in window)
-      ) {
-        throw new Error("이 브라우저는 음성 인식을 지원하지 않습니다.");
-      }
-
-      // SpeechRecognition 객체 생성
-      const SpeechRecognitionClass =
+  // Web Speech API 지원 확인
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const SpeechRecognition =
         window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognitionClass();
+      if (SpeechRecognition) {
+        recognitionRef.current = new SpeechRecognition();
+        recognitionRef.current.continuous = true;
+        recognitionRef.current.interimResults = true;
+        recognitionRef.current.lang = "ko-KR";
 
-      // 설정
-      recognition.lang = "ko-KR"; // 한국어
-      recognition.continuous = true; // 연속 인식 활성화 (마이크 켜진 동안 계속 인식)
-      recognition.interimResults = false; // 중간 결과 표시 비활성화
+        recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+          let finalTranscript = "";
+          let interimTranscript = "";
 
-      // 이벤트 핸들러
-      recognition.onstart = () => {
-        setIsRecording(true);
-        setTranscript("");
-        toast({
-          title: "음성 인식 시작",
-          description: "마이크를 통해 말씀해주세요.",
-        });
-      };
-
-      recognition.onresult = (event) => {
-        let finalTranscript = "";
-
-        // 모든 결과를 순회하면서 최종 결과만 수집
-        for (let i = 0; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript;
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript;
+            } else {
+              interimTranscript += transcript;
+            }
           }
-        }
 
-        // 최종 결과가 있으면 기존 텍스트에 누적
-        if (finalTranscript) {
-          setTranscript((prev) => prev + finalTranscript);
-        }
-      };
+          if (finalTranscript) {
+            setTranscript((prev) => prev + finalTranscript);
+            setSpeakerTranscripts((prev) => [...prev, finalTranscript]);
+          }
+        };
 
-      recognition.onerror = (event) => {
-        console.error("음성 인식 오류:", event.error);
-        setIsRecording(false);
-        toast({
-          title: "음성 인식 오류",
-          description: `오류: ${event.error}`,
-          variant: "destructive",
-        });
-      };
-
-      recognition.onend = () => {
-        setIsRecording(false);
-        if (transcript.trim()) {
+        recognitionRef.current.onerror = (
+          event: SpeechRecognitionErrorEvent
+        ) => {
+          console.error("음성 인식 오류:", event.error);
           toast({
-            title: "음성 인식 완료",
-            description: "음성 인식이 완료되었습니다.",
+            title: "음성 인식 오류",
+            description: `오류: ${event.error}`,
+            variant: "destructive",
           });
-        }
-      };
+          setIsRecording(false);
+        };
 
-      // 음성 인식 시작
-      recognition.start();
-      recognitionRef.current = recognition;
-    } catch (error) {
-      console.error("음성 인식 초기화 오류:", error);
+        recognitionRef.current.onend = () => {
+          setIsRecording(false);
+        };
+      }
+    }
+  }, [toast]);
+
+  const startRecording = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.start();
+      setIsRecording(true);
       toast({
-        title: "오류",
-        description:
-          error instanceof Error
-            ? error.message
-            : "음성 인식을 시작할 수 없습니다.",
-        variant: "destructive",
+        title: "음성 인식 시작",
+        description: "마이크를 통해 음성을 인식하고 있습니다.",
       });
     }
   };
 
-  // STT 중지
   const stopRecording = () => {
-    if (recognitionRef.current && isRecording) {
+    if (recognitionRef.current) {
       recognitionRef.current.stop();
       setIsRecording(false);
+      toast({
+        title: "음성 인식 종료",
+        description: "음성 인식이 종료되었습니다.",
+      });
     }
   };
 
-  // 요약 요청
-  const requestSummary = async () => {
+  const handleCreateSummary = async () => {
     if (!transcript.trim()) {
       toast({
         title: "경고",
@@ -186,23 +168,16 @@ const STTComponent = ({
 
     setIsProcessing(true);
     try {
-      // 요약 API 호출 (백엔드 엔드포인트에 맞게 수정 필요)
-      const summaryApiUrl =
-        import.meta.env.VITE_SUMMARY_API_URL || "/api/summarize";
-      const response = await fetch(summaryApiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: transcript }),
-      });
+      const inputData: ConversationInput = {
+        patient_id: patientId,
+        conversation: transcript,
+      };
 
-      if (!response.ok) {
-        throw new Error("요약 처리 중 오류가 발생했습니다.");
-      }
+      const summaryResult = await apiService.createSummary(inputData);
+      setSummaryData(summaryResult);
 
-      const data = await response.json();
-      const summaryText = data.summary || "요약을 생성할 수 없습니다.";
+      // 요약 텍스트를 JSON 형태로 포맷팅
+      const summaryText = JSON.stringify(summaryResult, null, 2);
       setSummary(summaryText);
 
       // 부모 컴포넌트에 요약 전달
@@ -221,6 +196,24 @@ const STTComponent = ({
       });
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      toast({
+        title: "복사 완료",
+        description: "클립보드에 복사되었습니다.",
+      });
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: "복사 실패",
+        description: "클립보드 복사에 실패했습니다.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -274,65 +267,116 @@ const STTComponent = ({
                 onClick={() => {
                   setTranscript("");
                   setSpeakerTranscripts([]);
+                  setSummary("");
+                  setSummaryData(null);
                 }}
                 className="text-xs"
               >
-                텍스트 지우기
+                초기화
               </Button>
             )}
           </div>
-
-          {enableSpeakerIdentification && speakerTranscripts.length > 0 ? (
-            <div className="space-y-2 max-h-32 overflow-y-auto border rounded-lg p-3">
-              {speakerTranscripts.map((item, index) => (
-                <div key={index} className="flex items-start gap-2 text-sm">
-                  <span className="font-medium text-blue-600 min-w-[60px]">
-                    {item.speaker}
-                  </span>
-                  <span className="text-gray-700">{item.text}</span>
-                  <span className="text-xs text-gray-500 ml-auto">
-                    {item.timestamp}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <Textarea
-              placeholder="음성 인식 결과가 여기에 표시됩니다..."
-              value={transcript}
-              onChange={handleTranscriptChange}
-              className="min-h-24"
-            />
-          )}
+          <Textarea
+            value={transcript}
+            onChange={handleTranscriptChange}
+            placeholder="음성 인식 결과가 여기에 표시됩니다..."
+            className="min-h-[100px] resize-none"
+            disabled={isRecording}
+          />
         </div>
 
-        {/* 요약 버튼 */}
-        <div className="flex justify-center">
-          <Button
-            onClick={requestSummary}
-            disabled={!transcript.trim() || isProcessing}
-            className="gap-2"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                요약 중...
-              </>
-            ) : (
-              <>
-                <Send className="h-4 w-4" />
-                요약 생성
-              </>
-            )}
-          </Button>
-        </div>
+        {/* 요약 생성 버튼 */}
+        {transcript && (
+          <div className="flex justify-center">
+            <Button
+              onClick={handleCreateSummary}
+              disabled={isProcessing || !transcript.trim()}
+              className="flex items-center gap-2"
+            >
+              {isProcessing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  요약 생성 중...
+                </>
+              ) : (
+                <>
+                  <FileText className="h-4 w-4" />
+                  요약 생성하기
+                </>
+              )}
+            </Button>
+          </div>
+        )}
 
-        {/* 요약 결과 */}
+        {/* 요약 결과 표시 */}
         {summary && (
-          <div>
-            <label className="text-sm font-medium mb-2 block">요약 결과</label>
-            <div className="p-4 bg-muted rounded-lg border">
-              <p className="text-sm leading-relaxed">{summary}</p>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <h4 className="text-sm font-medium text-purple-700">요약 결과</h4>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => copyToClipboard(summary)}
+                className="text-xs"
+              >
+                {isCopied ? (
+                  <>
+                    <Check className="h-3 w-3 mr-1" />
+                    복사됨
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3 w-3 mr-1" />
+                    복사
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* 보라색 박스로 요약 결과 표시 */}
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              {summaryData ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="flex items-start gap-2">
+                      <span className="font-semibold text-purple-800 min-w-[80px]">
+                        의사 소견:
+                      </span>
+                      <span className="text-purple-700">
+                        {summaryData.의사_소견}
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-semibold text-purple-800 min-w-[80px]">
+                        환자 우려점:
+                      </span>
+                      <span className="text-purple-700">
+                        {summaryData.환자의_우려점}
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-semibold text-purple-800 min-w-[80px]">
+                        진료 계획:
+                      </span>
+                      <span className="text-purple-700">
+                        {summaryData.진료_계획}
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-semibold text-purple-800 min-w-[80px]">
+                        처방:
+                      </span>
+                      <span className="text-purple-700">
+                        {summaryData.처방}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <pre className="text-sm text-purple-700 whitespace-pre-wrap">
+                  {summary}
+                </pre>
+              )}
             </div>
           </div>
         )}

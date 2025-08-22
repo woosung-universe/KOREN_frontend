@@ -1,72 +1,151 @@
 # KOREN Frontend
 
-의료 진단을 위한 프론트엔드 애플리케이션입니다.
+피부암 진단을 위한 AI 기반 웹 애플리케이션입니다.
 
-## 설치 및 실행
+## 🚀 주요 기능
+
+- **AI 진단**: 피부 이미지를 업로드하여 AI 모델로 진단
+- **음성 인식**: STT를 통한 대화 요약 및 진료 기록
+- **모델 학습**: Federated Learning을 통한 모델 업데이트
+- **진단 기록**: 환자별 진단 이력 및 데이터 분석
+
+## 🛠️ 기술 스택
+
+- **Frontend**: React 18 + TypeScript + Vite
+- **UI**: Tailwind CSS + Shadcn/ui
+- **State Management**: React Context + React Query
+- **API**: FastAPI 백엔드 연동
+
+## 📦 설치 및 실행
+
+### 1. 의존성 설치
 
 ```bash
-npm i
-npm run dev
+npm install
+# 또는
+yarn install
+# 또는
+bun install
 ```
 
-## STT 기능 사용법
+### 2. 환경 변수 설정
 
-### 음성 인식 (Speech-to-Text)
-
-1. 메인 화면의 진단 메모 아래에 있는 "음성 인식 및 요약" 섹션을 찾습니다
-2. 마이크 버튼을 클릭하여 음성 인식을 시작합니다
-3. 말씀하신 후 다시 마이크 버튼을 클릭하여 음성 인식을 중지합니다
-4. **브라우저의 Web Speech API를 사용하여 프론트엔드에서 직접 음성을 텍스트로 변환합니다**
-
-### 화자 식별 (Speaker Diarization)
-
-**⚠️ 현재 구현된 Web Speech API로는 화자 식별이 불가능합니다.**
-
-화자 식별이 필요한 경우:
-
-- **Google Cloud Speech-to-Text**: `enable_speaker_diarization` 옵션
-- **Azure Speech Services**: 화자 식별 API 제공
-- **AWS Transcribe**: 다중 화자 식별 지원
-
-이러한 서비스들은 별도의 백엔드 API 구현이 필요합니다.
-
-### 요약 생성
-
-1. 음성 인식이 완료된 후 "요약 생성" 버튼을 클릭합니다
-2. 백엔드 서버에서 AI를 통해 텍스트를 요약합니다
-3. 요약 결과가 표시되고, 자동으로 진단 메모에 추가됩니다
-
-## 환경 변수 설정
-
-백엔드 API 엔드포인트를 설정하려면 `.env.local` 파일을 생성하고 다음을 추가하세요:
+프로젝트 루트에 `.env.local` 파일을 생성하고 다음 내용을 추가하세요:
 
 ```env
-VITE_SUMMARY_API_URL=http://localhost:8000/api/summarize
-VITE_BACKEND_URL=http://localhost:8000
+# 백엔드 API 설정
+VITE_API_BASE_URL=http://localhost:8000
+
+# 기타 환경 변수
+VITE_APP_NAME=KOREN Frontend
 ```
 
-**참고**: STT는 프론트엔드에서 Web Speech API로 처리되므로 별도의 STT API 엔드포인트가 필요하지 않습니다.
+### 3. 개발 서버 실행
 
-## 백엔드 API 요구사항
+```bash
+npm run dev
+# 또는
+yarn dev
+# 또는
+bun dev
+```
 
-### STT API (`/api/stt`)
+## 🔌 API 엔드포인트
 
-**⚠️ 더 이상 필요하지 않습니다. STT는 프론트엔드에서 Web Speech API로 처리됩니다.**
+### 진단 관련
 
-### 요약 API (`/api/summarize`)
+- `POST /diagnose` - 이미지 업로드 및 AI 진단
+- `GET /diagnosis/{patient_id}` - 특정 환자의 진단 결과
+- `GET /diagnoses` - 전체 진단 기록 조회
 
-### 요약 API (`/api/summarize`)
+### STT 요약 관련
 
-- **Method**: POST
-- **Content-Type**: application/json
-- **Body**: `{ text: string }`
-- **Response**: `{ summary: string }`
+- `POST /summarize` - 대화 텍스트 요약 생성
+- `GET /summary/{patient_id}` - 최신 요약 조회
 
-## 기술 스택
+### 모델 학습 관련
 
-- React 18
-- TypeScript
-- Tailwind CSS
-- Shadcn/ui
-- Vite
-- Web Speech API (STT)
+- `POST /train` - Federated Learning 모델 학습 시작
+- `GET /training/status/{job_id}` - 학습 진행 상황 확인
+
+## 📱 페이지 구성
+
+### 1. 메인 페이지 (`/`)
+
+- 피부 이미지 업로드
+- 환자 정보 입력
+- AI 진단 실행
+- STT 음성 인식 및 요약
+
+### 2. 진단 기록 (`/diagnosis-history`)
+
+- 캘린더 뷰로 진단 기록 확인
+- 데이터 테이블로 상세 정보 조회
+- 백엔드 데이터 동기화
+
+### 3. 모델 학습 (`/training`)
+
+- CSV 데이터셋 업로드
+- Federated Learning 실행
+- 학습 진행 상황 모니터링
+
+## 🎯 주요 컴포넌트
+
+### STTComponent
+
+- Web Speech API를 사용한 음성 인식
+- OpenAI GPT를 통한 대화 요약
+- 보라색 박스로 요약 결과 표시
+
+### DiagnosisCard
+
+- 이미지 업로드 및 미리보기
+- 환자 정보 입력 폼
+- 백엔드 API 연동 진단
+
+### Training
+
+- 파일 업로드 및 검증
+- 학습 상태 관리
+- 완료 후 결과 표시
+
+## 🔧 개발 가이드
+
+### API 서비스 추가
+
+`src/services/api.ts`에 새로운 API 메서드를 추가하세요:
+
+```typescript
+// 새로운 API 메서드 예시
+async newApiMethod(data: NewDataType): Promise<NewResponseType> {
+  return this.request<NewResponseType>('/new-endpoint', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+```
+
+### 컴포넌트에서 API 사용
+
+```typescript
+import { apiService } from "@/services/api";
+
+const handleApiCall = async () => {
+  try {
+    const result = await apiService.newApiMethod(data);
+    // 결과 처리
+  } catch (error) {
+    // 에러 처리
+  }
+};
+```
+
+## 🚨 주의사항
+
+1. **백엔드 서버**: FastAPI 백엔드가 `http://localhost:8000`에서 실행 중이어야 합니다.
+2. **환경 변수**: `.env.local` 파일이 올바르게 설정되어야 합니다.
+3. **CORS**: 백엔드에서 프론트엔드 도메인을 허용해야 합니다.
+
+## 📄 라이선스
+
+이 프로젝트는 MIT 라이선스 하에 배포됩니다.
