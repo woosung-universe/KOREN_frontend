@@ -403,9 +403,9 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
             <SelectValue placeholder="부위를 선택하세요" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="head/neck">머리/목</SelectItem>
-            <SelectItem value="upper extremity">상지 (팔)</SelectItem>
-            <SelectItem value="lower extremity">하지 (다리)</SelectItem>
+            <SelectItem value="head_neck">머리/목</SelectItem>
+            <SelectItem value="upper_extremity">상지 (팔)</SelectItem>
+            <SelectItem value="lower_extremity">하지 (다리)</SelectItem>
             <SelectItem value="torso">몸통</SelectItem>
           </SelectContent>
         </Select>
@@ -484,7 +484,6 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
         </div>
       </div>
 
-      // 진단 결과
       {diagnosisResult && (
         <div className="mb-8 p-6 bg-blue-50 rounded-lg">
           <h3 className="text-lg font-bold text-foreground mb-2">진단 결과</h3>
