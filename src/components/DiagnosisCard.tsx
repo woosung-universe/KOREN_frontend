@@ -484,6 +484,7 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
         </div>
       </div>
 
+      // 진단 결과
       {diagnosisResult && (
         <div className="mb-8 p-6 bg-blue-50 rounded-lg">
           <h3 className="text-lg font-bold text-foreground mb-2">진단 결과</h3>
