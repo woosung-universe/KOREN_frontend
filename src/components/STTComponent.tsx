@@ -78,7 +78,7 @@ const STTComponent = ({
   const [summary, setSummary] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-  const [summaryData, setSummaryData] = useState<CommunicationSummary | null>(
+  const [summaryData, setSummaryData] = useState< CommunicationSummary| null>(
     null
   );
 
@@ -338,7 +338,7 @@ const STTComponent = ({
                         의사 소견:
                       </span>
                       <span className="text-purple-700">
-                        {summaryData.의사_소견}
+                        {summaryData["의사 소견"]}
                       </span>
                     </div>
                     <div className="flex items-start gap-2">
@@ -346,7 +346,7 @@ const STTComponent = ({
                         환자 우려점:
                       </span>
                       <span className="text-purple-700">
-                        {summaryData.환자의_우려점}
+                        {summaryData["환자의 우려점"]}
                       </span>
                     </div>
                     <div className="flex items-start gap-2">
@@ -354,7 +354,7 @@ const STTComponent = ({
                         진료 계획:
                       </span>
                       <span className="text-purple-700">
-                        {summaryData.진료_계획}
+                        {summaryData["진료 계획"]}
                       </span>
                     </div>
                     <div className="flex items-start gap-2">
@@ -362,7 +362,7 @@ const STTComponent = ({
                         처방:
                       </span>
                       <span className="text-purple-700">
-                        {summaryData.처방}
+                        {summaryData["처방"]}
                       </span>
                     </div>
                   </div>

@@ -101,13 +101,13 @@ class ApiService {
   async createSummary(patientId: string, conversation: string): Promise<CommunicationSummary> {
     // // Mock API 사용 시
     // if (USE_MOCK_API) {
-    //   return mockApiService.createSummary(data);
+    //   return mockApiService.createSummary(data); // 수정 후 전달받지 않은 파라미터 'data' 때문에 주석처리
     // }
 
     // 실제 API 호출
     const payload = {
-      patient_id: patientId,      // snake_case (백엔드 모델과 일치)
-      conversation: conversation, // 반드시 string
+      patient_id: patientId,
+      conversation: conversation,
     };
 
     return this.request<CommunicationSummary>("/summarize", {
@@ -132,6 +132,7 @@ class ApiService {
     // 실제 API 호출
     return this.request(`/summary/${patientId}`);
   }
+
 
   // 전체 진단 기록 조회
   async getDiagnoses(): Promise<PatientDiagnosis> {
