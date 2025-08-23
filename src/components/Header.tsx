@@ -21,6 +21,13 @@ const Header = () => {
           {/* Navigation */}
           <nav className="flex items-center space-x-8">
             <Link
+              to="/patients"
+              className="flex items-center space-x-1 text-sm text-muted-foreground cursor-pointer hover:text-foreground"
+            >
+              <span>환자 관리</span>
+              <ChevronDown className="w-4 h-4" />
+            </Link>
+            <Link
               to="/diagnosis-history"
               className="flex items-center space-x-1 text-sm text-muted-foreground cursor-pointer hover:text-foreground"
             >
@@ -34,18 +41,6 @@ const Header = () => {
               <span>모델 학습</span>
               <ChevronDown className="w-4 h-4" />
             </Link>
-            <div className="flex items-center space-x-1 text-sm text-muted-foreground cursor-pointer hover:text-foreground">
-              <span>메뉴명</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
-            <div className="flex items-center space-x-1 text-sm text-muted-foreground cursor-pointer hover:text-foreground">
-              <span>버튼</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
-            <div className="flex items-center space-x-1 text-sm text-muted-foreground cursor-pointer hover:text-foreground">
-              <span>버튼</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
           </nav>
         </div>
       </div>
