@@ -54,21 +54,34 @@ const DiagnosisHistory = () => {
     try {
       const result = await apiService.getDiagnoses();
 
-      // 백엔드 데이터를 프론트엔드 형식으로 변환
+      // 데이터 매핑
+      interface BackendDiagnosisResponse {
+        image_name: string | null;
+        patient_id: string | null;
+        sex: string | null;
+        age_approx: number | null;
+        anatom_site_general_challenge: string | null;
+        target: number;
+        diagnosis: string | null;
+        benign_malignant: string | null;
+        location: string | null;
+        confidence_score: number;
+        diagnosed_by: string;
+        diagnosed_at: string;
+      }
+
       const convertedRecords: DiagnosisData[] = result.diagnoses.map(
-        (diagnosis) => ({
-          image_name: `Image_${diagnosis.diagnosed_at || "Unknown"}`,
-          patient_id: result.patient_id,
-          sex: "unknown", // 백엔드에서 제공하지 않는 필드
-          age_approx: diagnosis.age_approx,
-          anatom_site_general_challenge:
-            diagnosis.location || diagnosis.anatom_site_general_challenge || "",
-          target: diagnosis.benign_malignant === "malignant" ? 1 : 0,
-          diagnosis: diagnosis.benign_malignant || "",
-          benign_malignant: diagnosis.benign_malignant || "",
-          location:
-            diagnosis.location || diagnosis.anatom_site_general_challenge || "",
-        })
+          (diagnosis: BackendDiagnosisResponse) => ({
+            image_name: diagnosis.image_name,
+            patient_id: diagnosis.patient_id,
+            sex: diagnosis.sex,
+            age_approx: diagnosis.age_approx,
+            anatom_site_general_challenge: diagnosis.anatom_site_general_challenge,
+            target: diagnosis.target,
+            diagnosis: diagnosis.diagnosis,
+            benign_malignant: diagnosis.benign_malignant,
+            location: diagnosis.location,
+          })
       );
 
       // 새로고침인 경우 기존 데이터를 초기화하고 새 데이터로 교체
