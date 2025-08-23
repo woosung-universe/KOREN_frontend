@@ -98,18 +98,25 @@ class ApiService {
   }
 
   // STT 기반 대화 요약
-  async createSummary(data: ConversationInput): Promise<CommunicationSummary> {
-    // Mock API 사용 시
-    if (USE_MOCK_API) {
-      return mockApiService.createSummary(data);
-    }
+  async createSummary(patientId: string, conversation: string): Promise<CommunicationSummary> {
+    // // Mock API 사용 시
+    // if (USE_MOCK_API) {
+    //   return mockApiService.createSummary(data);
+    // }
 
     // 실제 API 호출
+    const payload = {
+      patient_id: patientId,      // snake_case (백엔드 모델과 일치)
+      conversation: conversation, // 반드시 string
+    };
+
     return this.request<CommunicationSummary>("/summarize", {
       method: "POST",
-      body: JSON.stringify(data),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
   }
+
 
   // 최신 요약 조회
   async getLatestSummary(patientId: string): Promise<{

@@ -168,19 +168,14 @@ const STTComponent = ({
 
     setIsProcessing(true);
     try {
-      const inputData: ConversationInput = {
-        patient_id: patientId,
-        conversation: transcript,
-      };
-
-      const summaryResult = await apiService.createSummary(inputData);
+      const summaryResult = await apiService.createSummary(patientId, transcript);
       setSummaryData(summaryResult);
 
-      // 요약 텍스트를 JSON 형태로 포맷팅
+      // JSON 문자열로 변환해서 summary에 저장
       const summaryText = JSON.stringify(summaryResult, null, 2);
       setSummary(summaryText);
 
-      // 부모 컴포넌트에 요약 전달
+      // 부모 컴포넌트에 전달
       onSummaryReceived?.(summaryText);
 
       toast({
