@@ -327,4 +327,7 @@ export const mockApiService = {
 
 // 개발 모드에서 Mock API 사용 여부를 결정하는 플래그
 export const USE_MOCK_API =
-  import.meta.env.VITE_USE_MOCK_API === "true" || import.meta.env.DEV;
+    import.meta.env.VITE_USE_MOCK_API === "true"; // 환경변수로 결정
+
+// export const USE_MOCK_API =
+//   import.meta.env.VITE_USE_MOCK_API === "true" || import.meta.env.DEV;
