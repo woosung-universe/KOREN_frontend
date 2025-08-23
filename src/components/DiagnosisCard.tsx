@@ -354,25 +354,25 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
                   <p>
                     <span className="font-medium">의사 소견:</span>{" "}
                     <span className="text-gray-600">
-                      {existingSummary.의사_소견}
+                      {existingSummary["의사 소견"]}
                     </span>
                   </p>
                   <p>
                     <span className="font-medium">환자 우려점:</span>{" "}
                     <span className="text-gray-600">
-                      {existingSummary.환자의_우려점}
+                      {existingSummary["환자의 우려점"]}
                     </span>
                   </p>
                   <p>
                     <span className="font-medium">진료 계획:</span>{" "}
                     <span className="text-gray-600">
-                      {existingSummary.진료_계획}
+                      {existingSummary["진료 계획"]}
                     </span>
                   </p>
                   <p>
                     <span className="font-medium">처방:</span>{" "}
                     <span className="text-gray-600">
-                      {existingSummary.처방}
+                      {existingSummary["처방"]}
                     </span>
                   </p>
                 </div>
@@ -403,9 +403,9 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
             <SelectValue placeholder="부위를 선택하세요" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="head/neck">머리/목</SelectItem>
-            <SelectItem value="upper extremity">상지 (팔)</SelectItem>
-            <SelectItem value="lower extremity">하지 (다리)</SelectItem>
+            <SelectItem value="head_neck">머리/목</SelectItem>
+            <SelectItem value="upper_extremity">상지 (팔)</SelectItem>
+            <SelectItem value="lower_extremity">하지 (다리)</SelectItem>
             <SelectItem value="torso">몸통</SelectItem>
           </SelectContent>
         </Select>
@@ -527,7 +527,8 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
               진단 메모 (선택사항)
             </label>
             <Textarea
-              placeholder={
+                maxLength={200}
+                placeholder={
                 isPatientInfoComplete
                   ? "추가 관찰 사항이나 메모를 입력하세요"
                   : "환자 정보를 먼저 입력해주세요"
@@ -540,7 +541,7 @@ const DiagnosisCard = ({ onDiagnose, showResult }: DiagnosisCardProps) => {
               disabled={!isPatientInfoComplete}
             />
             <div className="text-right text-xs text-muted-foreground mt-2">
-              <span className="text-blue-600">{diagnosisText.length}</span>/200
+              <span className="text-blue-600">{diagnosisText.length}</span>/500
             </div>
           </div>
 
